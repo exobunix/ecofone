@@ -11,11 +11,104 @@ import AdminSidebar from './AdminSidebar';
 export default function AdminDashboardScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState('7d');
+  const [currentTab, setCurrentTab] = useState('dashboard');
+
+  const renderTabContent = () => {
+    switch (currentTab) {
+      case 'dashboard':
+        return (
+          <>
+            {/* KPI Cards */}
+            <KpiCards />
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <RevenueChart />
+              </div>
+              <div>
+                <CategoryDonut />
+              </div>
+            </div>
+
+            {/* Orders Tables */}
+            <OrdersTable />
+          </>
+        );
+      case 'sell_orders':
+      case 'buy_orders':
+      case 'pickups':
+      case 'inspections':
+        return (
+          <div className="bg-card rounded-2xl border border-border p-6 shadow-sm space-y-4">
+            <h2 className="text-base font-extrabold text-foreground capitalize">
+              {currentTab.replace('_', ' ')} Manager
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Review and manage system order records and updates.
+            </p>
+            <OrdersTable />
+          </div>
+        );
+      case 'customers':
+        return (
+          <div className="bg-card rounded-2xl border border-border p-6 shadow-sm space-y-4">
+            <h2 className="text-base font-extrabold text-foreground">Customer Management</h2>
+            <p className="text-xs text-muted-foreground">
+              View registered customer profiles and platform details.
+            </p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50 text-xs font-bold text-muted-foreground">
+                    <th className="px-4 py-3">Customer ID</th>
+                    <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Verified</th>
+                  </tr>
+                </thead>
+                <tbody className="text-xs">
+                  <tr className="border-b border-border">
+                    <td className="px-4 py-3 font-mono text-primary font-bold">USR-841920</td>
+                    <td className="px-4 py-3 font-semibold">Priya Nair</td>
+                    <td className="px-4 py-3">priya@example.com</td>
+                    <td className="px-4 py-3 text-success font-semibold">Yes</td>
+                  </tr>
+                  <tr className="border-b border-border">
+                    <td className="px-4 py-3 font-mono text-primary font-bold">USR-294012</td>
+                    <td className="px-4 py-3 font-semibold">Rahul Mehta</td>
+                    <td className="px-4 py-3">rahul@mehta.com</td>
+                    <td className="px-4 py-3 text-success font-semibold">Yes</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <div className="bg-card rounded-2xl border border-border p-8 shadow-sm text-center space-y-3">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
+              <Icon name="WrenchIcon" size={24} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground capitalize">{currentTab.replace('_', ' ')}</h3>
+              <p className="text-xs text-muted-foreground mt-1">This module is currently being optimized. Check back soon!</p>
+            </div>
+          </div>
+        );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-muted flex">
       {/* Sidebar */}
-      <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        currentTab={currentTab}
+        onChangeTab={setCurrentTab}
+      />
       {/* Overlay */}
       {sidebarOpen && (
         <div
@@ -81,7 +174,9 @@ export default function AdminDashboardScreen() {
           {/* Page Title */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-extrabold text-foreground">Dashboard</h1>
+              <h1 className="text-xl font-extrabold text-foreground capitalize">
+                {currentTab.replace('_', ' ')}
+              </h1>
               <p className="text-sm text-muted-foreground">August 21, 2026 · Overview</p>
             </div>
             <div className="flex items-center gap-2">
@@ -99,21 +194,7 @@ export default function AdminDashboardScreen() {
             </div>
           </div>
 
-          {/* KPI Cards */}
-          <KpiCards />
-
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <RevenueChart />
-            </div>
-            <div>
-              <CategoryDonut />
-            </div>
-          </div>
-
-          {/* Orders Tables */}
-          <OrdersTable />
+          {renderTabContent()}
         </main>
       </div>
     </div>

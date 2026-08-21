@@ -8,52 +8,43 @@ const navSections = [
   {
     title: 'Overview',
     items: [
-      { label: 'Dashboard', icon: 'HomeIcon', href: '/admin-dashboard', active: true },
-      { label: 'Analytics', icon: 'ChartBarIcon', href: '/admin-dashboard' },
+      { label: 'Dashboard', icon: 'HomeIcon', id: 'dashboard' },
+      { label: 'Analytics', icon: 'ChartBarIcon', id: 'analytics' },
     ],
   },
   {
     title: 'Catalog',
     items: [
-      { label: 'Categories', icon: 'TagIcon', href: '/admin-dashboard' },
-      { label: 'Brands', icon: 'BuildingStorefrontIcon', href: '/admin-dashboard' },
-      { label: 'Models', icon: 'DevicePhoneMobileIcon', href: '/admin-dashboard' },
-      { label: 'Products', icon: 'ArchiveBoxIcon', href: '/admin-dashboard' },
-      { label: 'Inventory', icon: 'CubeIcon', href: '/admin-dashboard' },
+      { label: 'Categories', icon: 'TagIcon', id: 'categories' },
+      { label: 'Brands', icon: 'BuildingStorefrontIcon', id: 'brands' },
+      { label: 'Models', icon: 'DevicePhoneMobileIcon', id: 'models' },
+      { label: 'Products', icon: 'ArchiveBoxIcon', id: 'products' },
+      { label: 'Inventory', icon: 'CubeIcon', id: 'inventory' },
     ],
   },
   {
     title: 'Pricing',
     items: [
-      { label: 'Question Builder', icon: 'QuestionMarkCircleIcon', href: '/admin-dashboard' },
-      { label: 'Pricing Engine', icon: 'CurrencyRupeeIcon', href: '/admin-dashboard' },
-      { label: 'Coupons', icon: 'TicketIcon', href: '/admin-dashboard' },
+      { label: 'Question Builder', icon: 'QuestionMarkCircleIcon', id: 'questions' },
+      { label: 'Pricing Engine', icon: 'CurrencyRupeeIcon', id: 'pricing' },
+      { label: 'Coupons', icon: 'TicketIcon', id: 'coupons' },
     ],
   },
   {
     title: 'Orders',
     items: [
-      { label: 'Sell Orders', icon: 'ArrowUpCircleIcon', href: '/admin-dashboard' },
-      { label: 'Buy Orders', icon: 'ShoppingBagIcon', href: '/admin-dashboard' },
-      { label: 'Pickups', icon: 'TruckIcon', href: '/admin-dashboard' },
-      { label: 'Inspections', icon: 'MagnifyingGlassCircleIcon', href: '/admin-dashboard' },
+      { label: 'Sell Orders', icon: 'ArrowUpCircleIcon', id: 'sell_orders' },
+      { label: 'Buy Orders', icon: 'ShoppingBagIcon', id: 'buy_orders' },
+      { label: 'Pickups', icon: 'TruckIcon', id: 'pickups' },
+      { label: 'Inspections', icon: 'MagnifyingGlassCircleIcon', id: 'inspections' },
     ],
   },
   {
     title: 'Users',
     items: [
-      { label: 'Customers', icon: 'UsersIcon', href: '/admin-dashboard' },
-      { label: 'Roles & Permissions', icon: 'ShieldCheckIcon', href: '/admin-dashboard' },
-      { label: 'Audit Log', icon: 'ClipboardDocumentListIcon', href: '/admin-dashboard' },
-    ],
-  },
-  {
-    title: 'Content',
-    items: [
-      { label: 'Banners / CMS', icon: 'PhotoIcon', href: '/admin-dashboard' },
-      { label: 'Reviews', icon: 'StarIcon', href: '/admin-dashboard' },
-      { label: 'Support Tickets', icon: 'ChatBubbleLeftEllipsisIcon', href: '/admin-dashboard' },
-      { label: 'Settings', icon: 'Cog6ToothIcon', href: '/admin-dashboard' },
+      { label: 'Customers', icon: 'UsersIcon', id: 'customers' },
+      { label: 'Roles & Permissions', icon: 'ShieldCheckIcon', id: 'roles' },
+      { label: 'Audit Log', icon: 'ClipboardDocumentListIcon', id: 'audit' },
     ],
   },
 ];
@@ -61,9 +52,11 @@ const navSections = [
 interface Props {
   open: boolean;
   onClose: () => void;
+  currentTab: string;
+  onChangeTab: (tab: string) => void;
 }
 
-export default function AdminSidebar({ open, onClose }: Props) {
+export default function AdminSidebar({ open, onClose, currentTab, onChangeTab }: Props) {
   return (
     <aside
       className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-card border-r border-border z-40 flex flex-col transition-transform duration-300 ${
@@ -92,16 +85,30 @@ export default function AdminSidebar({ open, onClose }: Props) {
               {section.title}
             </p>
             <div className="space-y-0.5">
-              {section.items.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`admin-sidebar-link ${item.active ? 'active' : ''}`}
-                >
-                  <Icon name={item.icon as 'HomeIcon'} size={16} className={item.active ? 'text-primary' : 'text-muted-foreground'} />
-                  <span>{item.label}</span>
-                </Link>
-              ))}
+              {section.items.map((item) => {
+                const isActive = currentTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onChangeTab(item.id);
+                      onClose();
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-left transition-all ${
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-foreground hover:bg-muted'
+                    }`}
+                  >
+                    <Icon
+                      name={item.icon as 'HomeIcon'}
+                      size={16}
+                      className={isActive ? 'text-primary' : 'text-muted-foreground'}
+                    />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ))}
@@ -109,7 +116,7 @@ export default function AdminSidebar({ open, onClose }: Props) {
 
       {/* Bottom */}
       <div className="px-3 py-3 border-t border-border">
-        <Link href="/" className="admin-sidebar-link">
+        <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-left text-foreground hover:bg-muted">
           <Icon name="ArrowLeftOnRectangleIcon" size={16} className="text-muted-foreground" />
           <span>Back to Store</span>
         </Link>

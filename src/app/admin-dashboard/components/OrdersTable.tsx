@@ -63,15 +63,37 @@ export default function OrdersTable() {
   const [loading, setLoading] = useState(true);
 
   const fetchDbOrders = async () => {
+    let apiOrders: DbOrder[] = [];
     try {
       const res = await fetch('/api/admin/orders');
       if (res.ok) {
         const data = await res.json();
-        setDbOrders(data.orders || []);
+        apiOrders = data.orders || [];
       }
     } catch (err) {
-      console.error('Error fetching admin orders:', err);
+      console.error('Error fetching admin orders from API:', err);
     } finally {
+      // Load local storage fallback orders
+      const localOrders = JSON.parse(localStorage.getItem('local_orders') || '[]');
+      const formattedLocal = localOrders.map((lo: any) => ({
+        _id: lo._id,
+        customer: lo.customer,
+        device: lo.device,
+        amount: lo.amount,
+        status: lo.status,
+        date: lo.date,
+        type: lo.type,
+      }));
+
+      // Combine API and local orders, avoiding duplicates
+      const combined = [...apiOrders];
+      formattedLocal.forEach((lo: any) => {
+        if (!combined.some((co) => co._id === lo._id)) {
+          combined.push(lo);
+        }
+      });
+
+      setDbOrders(combined);
       setLoading(false);
     }
   };
@@ -91,9 +113,21 @@ export default function OrdersTable() {
         setDbOrders((prev) =>
           prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
         );
+        return;
       }
+      throw new Error('API failed');
     } catch (err) {
-      console.error('Error updating order status:', err);
+      console.warn('Error updating order status on server. Falling back to local state:', err);
+      
+      // Update in dbOrders state
+      setDbOrders((prev) =>
+        prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+      );
+
+      // Update in localStorage
+      const localOrders = JSON.parse(localStorage.getItem('local_orders') || '[]');
+      const updated = localOrders.map((o: any) => o._id === orderId ? { ...o, status: newStatus } : o);
+      localStorage.setItem('local_orders', JSON.stringify(updated));
     }
   };
 
