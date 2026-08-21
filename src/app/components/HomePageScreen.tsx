@@ -10,6 +10,7 @@ import ServiceShortcuts from './ServiceShortcuts';
 import TopSmartphones from './TopSmartphones';
 import PromoBanners from './PromoBanners';
 import TrustBadges from './TrustBadges';
+import TestimonialsAndWhyUs from './TestimonialsAndWhyUs';
 
 export default function HomePageScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,6 +94,11 @@ export default function HomePageScreen() {
         {/* Promo Banners */}
         <div className="reveal-up">
           <PromoBanners />
+        </div>
+
+        {/* Testimonials & Why Choose Us */}
+        <div className="reveal-up">
+          <TestimonialsAndWhyUs />
         </div>
 
         {/* Trust Badges */}
