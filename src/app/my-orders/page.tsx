@@ -14,32 +14,52 @@ interface OrderType {
   type: 'sell' | 'buy';
 }
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  PLACED: { label: 'Order Placed', color: 'bg-blue-50 text-blue-700' },
-  CONFIRMED: { label: 'Confirmed', color: 'bg-teal-50 text-teal-700' },
-  SHIPPED: { label: 'Shipped', color: 'bg-amber-50 text-amber-700' },
-  DELIVERED: { label: 'Delivered', color: 'bg-green-light text-primary' },
-  PICKUP_SCHEDULED: { label: 'Pickup Scheduled', color: 'bg-amber-50 text-amber-700' },
-  INSPECTION_PENDING: { label: 'Inspection Pending', color: 'bg-orange-50 text-orange-700' },
-  PAID: { label: 'Paid', color: 'bg-green-light text-primary' },
-  COMPLETED: { label: 'Completed', color: 'bg-green-light text-primary' },
-  CANCELLED: { label: 'Cancelled', color: 'bg-red-50 text-eco-error' },
+const statusConfig: Record<string, { label: string; color: string; stepIndex: number }> = {
+  PLACED: { label: 'Order Placed', color: 'bg-blue-50 text-blue-700', stepIndex: 0 },
+  CONFIRMED: { label: 'In Process', color: 'bg-teal-50 text-teal-700', stepIndex: 1 },
+  PACKED: { label: 'In Process', color: 'bg-purple-50 text-purple-700', stepIndex: 1 },
+  SHIPPED: { label: 'Out for Delivery', color: 'bg-amber-50 text-amber-700', stepIndex: 2 },
+  OUT_FOR_DELIVERY: { label: 'Out for Delivery', color: 'bg-orange-50 text-orange-700', stepIndex: 2 },
+  DELIVERED: { label: 'Delivered', color: 'bg-green-light text-primary', stepIndex: 3 },
+  COMPLETED: { label: 'Delivered', color: 'bg-green-light text-primary', stepIndex: 3 },
+  
+  // Sell order statuses
+  QUOTE_CREATED: { label: 'Quote Created', color: 'bg-blue-50 text-blue-700', stepIndex: 0 },
+  PICKUP_SCHEDULED: { label: 'Pickup Scheduled', color: 'bg-amber-50 text-amber-700', stepIndex: 1 },
+  INSPECTION_PENDING: { label: 'Inspection Pending', color: 'bg-orange-50 text-orange-700', stepIndex: 2 },
+  PAID: { label: 'Paid & Completed', color: 'bg-green-light text-primary', stepIndex: 3 },
+  CANCELLED: { label: 'Cancelled', color: 'bg-red-50 text-eco-error', stepIndex: -1 },
 };
+
+const buySteps = [
+  { title: 'Order Placed', desc: 'Seller accepted your order request' },
+  { title: 'In Process', desc: 'Quality checks and packaging completed' },
+  { title: 'Out for Delivery', desc: 'Package is handed to delivery partner' },
+  { title: 'Delivered', desc: 'Item successfully delivered to your doorstep' },
+];
+
+const sellSteps = [
+  { title: 'Quote Created', desc: 'Instant pricing quote generated' },
+  { title: 'Pickup Scheduled', desc: 'Agent scheduled to inspect and pick up' },
+  { title: 'Inspection Pending', desc: 'Device inspection in progress' },
+  { title: 'Paid & Completed', desc: 'Cash transferred successfully to your account' },
+];
 
 export default function MyOrdersPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; name: string } | null>(null);
   const [orders, setOrders] = useState<OrderType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<OrderType | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    if (!storedUser) {
+      router.replace('/login');
+    } else {
       const parsed = JSON.parse(storedUser);
       setUser(parsed);
       fetchOrders(parsed.id);
-    } else {
-      setLoading(false);
     }
   }, []);
 
@@ -67,22 +87,6 @@ export default function MyOrdersPage() {
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             <p className="text-sm text-muted-foreground">Loading your orders...</p>
           </div>
-        ) : !user ? (
-          <div className="bg-card rounded-2xl border border-border p-6 text-center space-y-4 shadow-sm my-10">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
-              <Icon name="LockClosedIcon" size={30} className="text-muted-foreground" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Sign in to view orders</h2>
-              <p className="text-xs text-muted-foreground mt-1">Please sign in with your account to see your buy and sell order history.</p>
-            </div>
-            <button
-              onClick={() => router.push('/login')}
-              className="w-full py-3.5 bg-primary text-white rounded-xl text-sm font-bold shadow-cta-green hover:bg-primary/90 transition-all"
-            >
-              Sign In
-            </button>
-          </div>
         ) : orders.length === 0 ? (
           <div className="text-center py-20 space-y-4">
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
@@ -107,7 +111,11 @@ export default function MyOrdersPage() {
               const isSell = order.type === 'sell';
 
               return (
-                <div key={order._id} className="bg-card rounded-2xl border border-border p-4 shadow-sm space-y-3">
+                <button
+                  key={order._id}
+                  onClick={() => setSelectedOrder(order)}
+                  className="w-full text-left bg-card rounded-2xl border border-border p-4 shadow-sm hover:border-primary/30 transition-all space-y-3"
+                >
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold font-mono text-muted-foreground uppercase">
                       ID: {order._id.substring(order._id.length - 8)}
@@ -137,12 +145,101 @@ export default function MyOrdersPage() {
                       </p>
                     </div>
                   </div>
-                </div>
+                  <div className="text-right text-[10px] text-primary font-bold">
+                    Click to view tracking status →
+                  </div>
+                </button>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Dynamic Order Progress Stepper Modal */}
+      {selectedOrder && (() => {
+        const isSell = selectedOrder.type === 'sell';
+        const steps = isSell ? sellSteps : buySteps;
+        const config = statusConfig[selectedOrder.status] || { stepIndex: 0 };
+        const currentStep = config.stepIndex;
+
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center">
+            <div className="bg-card w-full max-w-md rounded-t-3xl border-t border-border p-6 space-y-6 bottom-sheet-enter max-h-[85vh] overflow-y-auto">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${isSell ? 'bg-amber-50 text-amber-700' : 'bg-green-light text-primary'}`}>
+                    {isSell ? 'Sell Request' : 'Buy Order'}
+                  </span>
+                  <h3 className="text-base font-extrabold text-foreground mt-1.5">{selectedOrder.device}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">ID: {selectedOrder._id.toUpperCase()}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="p-1.5 rounded-full bg-muted text-muted-foreground hover:text-foreground"
+                >
+                  <Icon name="XMarkIcon" size={18} />
+                </button>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Stepper Timeline */}
+              <div className="space-y-6 relative pl-6">
+                {/* Connecting Line */}
+                <div className="absolute left-[31px] top-3 bottom-3 w-0.5 bg-border z-0" />
+
+                {steps.map((step, idx) => {
+                  const isCompleted = idx <= currentStep && currentStep !== -1;
+                  const isActive = idx === currentStep;
+
+                  return (
+                    <div key={idx} className="flex gap-4 relative z-10 items-start">
+                      {/* Step Indicator Dot */}
+                      <div className="absolute left-[-1px] top-1">
+                        {isCompleted ? (
+                          <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center border-2 border-primary shadow-sm text-white">
+                            <span className="text-[10px] font-bold">✓</span>
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full bg-card border-2 border-border flex items-center justify-center text-muted-foreground text-[10px] font-bold">
+                            {idx + 1}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="pl-6">
+                        <h4 className={`text-xs font-bold ${isActive ? 'text-primary' : isCompleted ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          {step.title}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                          {step.desc}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Amount Details */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">Order Value</p>
+                  <p className="text-lg font-extrabold text-foreground">{selectedOrder.amount}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedOrder(null)}
+                  className="px-6 py-3 bg-primary text-white rounded-xl text-xs font-bold"
+                >
+                  Close Tracking
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <BottomNav activeTab="orders" />
     </div>

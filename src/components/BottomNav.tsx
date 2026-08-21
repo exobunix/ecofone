@@ -9,7 +9,7 @@ const navItems: { tab: Tab; label: string; icon: string; href: string }[] = [
   { tab: 'home', label: 'Home', icon: 'HomeIcon', href: '/' },
   { tab: 'sell', label: 'Sell Device', icon: 'TagIcon', href: '/sell-device' },
   { tab: 'buy', label: 'Buy', icon: 'ShoppingBagIcon', href: '/product-listing' },
-  { tab: 'orders', label: 'My Orders', icon: 'ClipboardDocumentListIcon', href: '/admin-dashboard' },
+  { tab: 'orders', label: 'My Orders', icon: 'ClipboardDocumentListIcon', href: '/my-orders' },
   { tab: 'profile', label: 'Profile', icon: 'UserIcon', href: '/product-listing' },
 ];
 
