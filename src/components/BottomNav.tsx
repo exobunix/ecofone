@@ -10,12 +10,12 @@ const navItems: { tab: Tab; label: string; icon: string; href: string }[] = [
   { tab: 'sell', label: 'Sell Device', icon: 'TagIcon', href: '/sell-device' },
   { tab: 'buy', label: 'Buy', icon: 'ShoppingBagIcon', href: '/product-listing' },
   { tab: 'orders', label: 'My Orders', icon: 'ClipboardDocumentListIcon', href: '/my-orders' },
-  { tab: 'profile', label: 'Profile', icon: 'UserIcon', href: '/product-listing' },
+  { tab: 'profile', label: 'Profile', icon: 'UserIcon', href: '/login' },
 ];
 
 export default function BottomNav({ activeTab }: { activeTab: Tab }) {
   return (
-    <nav className="bottom-nav-glass fixed bottom-0 left-0 right-0 z-50 shadow-bottom-nav">
+    <nav className="bottom-nav-glass fixed bottom-0 left-0 right-0 z-40 shadow-bottom-nav">
       <div className="flex items-center justify-around py-2 px-2 max-w-lg mx-auto">
         {navItems.map((item) => {
           const isActive = item.tab === activeTab;

@@ -176,8 +176,8 @@ export default function MyOrdersPage() {
         const currentStep = config.stepIndex;
 
         return (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center">
-            <div className="bg-card w-full max-w-md rounded-t-3xl border-t border-border p-6 space-y-6 bottom-sheet-enter max-h-[85vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end justify-center">
+            <div className="bg-card w-full max-w-md rounded-t-3xl border-t border-border p-6 pb-20 space-y-6 bottom-sheet-enter max-h-[85vh] overflow-y-auto">
               <div className="flex justify-between items-start">
                 <div>
                   <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${isSell ? 'bg-amber-50 text-amber-700' : 'bg-green-light text-primary'}`}>
