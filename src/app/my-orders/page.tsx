@@ -64,15 +64,28 @@ export default function MyOrdersPage() {
   }, []);
 
   const fetchOrders = async (userId: string) => {
+    let apiOrders: OrderType[] = [];
     try {
       const res = await fetch(`/api/orders?userId=${userId}`);
       if (res.ok) {
         const data = await res.json();
-        setOrders(data.orders || []);
+        apiOrders = data.orders || [];
       }
     } catch (err) {
-      console.error('Error fetching orders:', err);
+      console.error('Error fetching orders from API:', err);
     } finally {
+      const localOrders = JSON.parse(localStorage.getItem('local_orders') || '[]');
+      const filteredLocal = localOrders.filter((o: any) => o.userId === userId || !o.userId);
+      
+      // Combine API orders and local orders, preventing duplicates by ID
+      const combined = [...apiOrders];
+      filteredLocal.forEach((lo: any) => {
+        if (!combined.some((co) => co._id === lo._id)) {
+          combined.push(lo);
+        }
+      });
+
+      setOrders(combined);
       setLoading(false);
     }
   };

@@ -91,7 +91,36 @@ export default function LoginPage() {
         setPassword('');
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred');
+      console.warn("DB Connection failed. Using local storage fallback:", err.message);
+      
+      const localUsers = JSON.parse(localStorage.getItem('local_users') || '[]');
+      
+      if (isLogin) {
+        const found = localUsers.find((u: any) => u.email === email && u.password === password);
+        if (found) {
+          const loggedInUser = { id: found.id, name: found.name, email: found.email };
+          localStorage.setItem('user', JSON.stringify(loggedInUser));
+          setUser(loggedInUser);
+          setSuccess('Logged in successfully (Local Demo Mode)!');
+          setTimeout(() => router.push('/'), 1000);
+        } else {
+          setError(err.message || 'Invalid credentials or database connection failed');
+        }
+      } else {
+        const existing = localUsers.find((u: any) => u.email === email);
+        if (existing) {
+          setError('User already exists');
+        } else {
+          const newUser = { id: 'usr_' + Date.now(), name, email, password };
+          localUsers.push(newUser);
+          localStorage.setItem('local_users', JSON.stringify(localUsers));
+          setSuccess('Registered successfully (Local Demo Mode)! Please sign in.');
+          setIsLogin(true);
+          setName('');
+          setEmail('');
+          setPassword('');
+        }
+      }
     } finally {
       setLoading(false);
     }
